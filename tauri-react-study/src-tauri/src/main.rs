@@ -1,11 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{thread, time};
 use serde::{Deserialize, Serialize};
+use std::{thread, time};
 use tauri::Window;
 mod monitor;
-
 
 #[derive(Serialize, Deserialize)]
 struct Person {
@@ -82,18 +81,20 @@ async fn init_process(window: Window) {
 
         let handler = tokio::spawn(async move {
             loop {
-                window.emit("my-event", monitor::Payload{
-                    message: monitor::monitor(),
-                    timestamp: monitor::timestamp(),
-                }).unwrap();
+                window
+                    .emit(
+                        "my-event",
+                        monitor::Payload {
+                            message: monitor::monitor(),
+                            timestamp: monitor::timestamp(),
+                        },
+                    )
+                    .unwrap();
                 FLAG = 1;
                 println!("emit:{}", monitor::timestamp().to_string());
-                
+
                 // sleep 100 milliseonds by tokio
                 tokio::time::sleep(time::Duration::from_millis(100)).await;
-
-                
-                
             }
         });
         handler.await.unwrap();
@@ -104,7 +105,13 @@ fn main() {
     tauri::Builder::default()
         .manage(connect_db())
         .invoke_handler(tauri::generate_handler![
-            hello1, hello2, hello3, get_person, method_1, query_data, init_process
+            hello1,
+            hello2,
+            hello3,
+            get_person,
+            method_1,
+            query_data,
+            init_process
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
